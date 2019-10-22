@@ -7,13 +7,14 @@ public class Ga {
     private double PRODTARG = 360;
 	int POP = 40;
 	int LEN = 10;
-	int GEN = 1000;
+	int GEN = 25;
 	double mR = 0.1;
 	double cR = 0.75;
 	int CHILDREN = 40;
 	Random r = new Random();
 	public int[][] genotipo = new int[POP][LEN];
 	double[] rank = new double[POP];
+	int[] elite = new int[LEN];
 	
 	void init_pop(){
 		
@@ -27,7 +28,7 @@ public class Ga {
 			}
 		}
 	}
-	Double valida(int p) {
+	Double fitness(int p) {
 		
 		int sum=0;
 		double mult=1;
@@ -48,12 +49,12 @@ public class Ga {
 		return combined_error;
 	}
 	
-	void fitness (int[][]pop) {
+	void selection (int[][]pop) {
 		
 		int[]aux1 = null;
 		double aux2;
 		for(int i = 0; i < POP ; i++) {
-				rank[i] = valida(i);
+				rank[i] = fitness(i);
 		}
 		for(int i = 0 ; i < POP ; i++) {
 			for(int j = 1 ; j < POP ; j++) {
@@ -70,6 +71,21 @@ public class Ga {
 				}
 			}
 		}				
+	}
+	
+	int tournament() {
+		
+		double c1,c2;
+		
+		c1 = r.nextDouble();
+		c2 = r.nextDouble();
+		
+		if(fitness((int) (POP*c1)) < fitness((int) (POP*c2))) {
+			return ((int) (POP*c1));
+		}else {
+			return ((int) (POP*c2));
+		}
+			
 	}
 	
 	int roulette() {
@@ -146,20 +162,25 @@ public class Ga {
 		int cut;
 		double m,c;
 		//boolean ext = false; //QUANDO ESTACA
-		fitness(genotipo);
+		selection(genotipo);
 		
 		
 		while(n<GEN) {
 					
 			
+			if(n==1) {
+				elite = genotipo[0];
+			}
 			
-			for(int i = 0 ; i < POP ; i++) {
+			for(int i = 0 ; i < POP-1 ; i++) {
 				m = r.nextDouble();
 				mp = r.nextInt(LEN);
 				c = r.nextDouble();
 				cut = r.nextInt(LEN);
-				x1 = roulette();
-				x2 = roulette();
+				//x1 = roulette();
+				//x2 = roulette();
+				x1 = tournament();
+				x2 = tournament();
 				if(c < cR) {
 					for(int j = 0 ; j < LEN ; j++) {
 						
@@ -179,15 +200,17 @@ public class Ga {
 					}
 				}
 			}
-			fitness(aux);
+			genotipo[POP-1] = elite;
+			selection(aux);
 			
 			for(int i = 0 ; i < POP ; i++) {
 				genotipo[i]=aux[i];
 			}
 			n++;
-			
+		printaAll(n);	
 		}
-		printaBest(n);
+		//printaBest(n);
+		
 		
 	}
 	
